@@ -1,4 +1,4 @@
-# FIRSTstats 2020
+# FIRSTstats 2024
 > An advanced statistics prediction engine for FIRST Robotics Competitions.  
 
 In previous seasons of FIRST, our team used a complicated and messy spreadsheet for event scouting and for match predictions. Our prediction algorithm was rudimentary and extremely inaccurate, and we wanted something that was more automated and higher quality than the excel file we were using before.  
@@ -70,6 +70,11 @@ All 3 are related to Google Sheets Integration:
 4. Share your newly created sheet with the email from your service account
 5. Setup the config.ini file with your FIRST API credentials and Google Sheets Info
 6. Run the python app using Python 3 (I recommend using tmux on Linux to run the program as a service)
+
+## Config File
+
+1. Event ID - Get it from https://frc-events.firstinspires.org/ ; Example ID: AZVA
+2. Sheet ID - ![Sheet ID](media/id.png)
 
 ## Contributing
 

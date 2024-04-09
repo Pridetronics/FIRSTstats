@@ -24,10 +24,11 @@
 # MMMMMMMMMMMMMMMMMMMMMMMMMMMMMWWWWWWWWMMMMMMMWX0kxx0NWMMMMMMWWx....,OMMMMXc....l0c....oNk'...,c,....''...,dNMX:....lKNWMM #
 # MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMNK0XWMMMMMMMMWNx;,,,oXMMMMKl,,,;kKl,,,:OM0:,,,l0Oc'....';dKWMM0c''';kKXWMM #
 ############################################################################################################################
- #                                                   FIRST STATS v1.0 2020                                                #
+ #                                                   FIRST STATS v2.0 2024                                                 #
  #                                     A statistical scouting application for FIRST Robotics                              #
  #                                               Written for Python 3.0 and up                                            #
  #                                                 Written By: Mitch Zakocs                                               #
+ #                                                 Updated By: Gadget                                                     #
 ############################################################################################################################
 
 # TODO: Eventually update rating system to GLICKO 2
@@ -37,6 +38,7 @@
 # TODO: Add predictions for whether or not the robot has a functional auto phase and whether
 # or not it has a functional hanging thing
 # TODO: Fix crash when an empty event is inputted
+# TODO: Allow for keyboard interrupt
 
 import firstconfig
 import firstsheets
@@ -118,6 +120,10 @@ def main():
                         sheets.createTeamEntry()
                 else:
                     print("Turning Service %s!" % config.powerswitch)
+        # Check if power switch is off, then break out of the loop
+        if config.powerswitch == "Off":
+            print("Service stopped at:", datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+            break
         # Sleep for 5 seconds before checking again
         time.sleep(5)
 

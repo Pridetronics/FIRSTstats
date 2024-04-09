@@ -558,36 +558,38 @@ class Sheets:
         # Playoff Match Object Creation
         for x in range(len(self.data.playoffScheduleData)):
             try:
-                tempMatch = Match(self.data.playoffScheduleData[x], self.data.playoffScoreData[x])
+                if x < len(self.data.playoffScoreData):  # Check if x is within the range of playoffScoreData
+                    tempMatch = Match(self.data.playoffScheduleData[x], self.data.playoffScoreData[x])
+                else:
+                    # If playoffScoreData is shorter, create a fake score entry
+                    tempMatch = Match(self.data.playoffScheduleData[x], self.createFakeScoreEntry(self.data.playoffScheduleData[x]))
+        
                 if self.checkIfMatchExists(tempMatch) == False:
-                    # In case for some reason theres no qualifier matches, set the origin to 4
+                    # In case for some reason there are no qualifier matches, set the origin to 4
                     if len(self.data.qualScheduleData) == 0:
                         tempMatch.o_y = 4
                     else:
                         tempMatch.o_y = self.matchList[-1].o_y + 18
+        
                     # Creates the entry in sheets
-                    # Updates the Mitch Score of the teams involved in the match if it's happened
+                    # Updates the Match Score of the teams involved in the match if it's happened
                     if tempMatch.matchhappened:
                         tempMatch.updateTeamScores(self.teamDict)
-                    print ("Match Object Created: ", tempMatch.matchtitle)
+                    print("Match Object Created: ", tempMatch.matchtitle)
                     self.matchList.insert(len(self.matchList), tempMatch)
                 else:
                     # If the match does exist, make sure it hasn't changed
                     # If it has, update it to the new data
                     self.updateMatchIfChanged(tempMatch)
-            except:
-                tempMatch = Match(self.data.playoffScheduleData[x], self.createFakeScoreEntry(self.data.playoffScheduleData[x]))
-                if (x == 0):
-                    tempMatch.o_y = 4 # If it's the very first match, set the origin to the fourth row
-                else:
-                    tempMatch.o_y = self.matchList[-1].o_y + 18
-                # Creates the entry in sheets
-                print ("Match Object Created: ", tempMatch.matchtitle)
-                self.matchList.insert(len(self.matchList), tempMatch)
-                print(tempMatch.matchtitle + " hasn't happened yet!")
-
-        # Creates a seperate list of matches that are filtered to the config settings
+            except IndexError:
+                # Handle IndexError specifically
+                print("IndexError occurred at index:", x)
+                # Add your error handling logic here if needed
+                pass
+            
+        # Creates a separate list of matches that are filtered to the config settings
         self.filterMatches()
+        
         
     def filterMatches(self):
         # Lists for teams to filter and a list of filtered matches
@@ -672,19 +674,21 @@ class Sheets:
         # Pushes the nuke to the sheet
         csqp.pushCellUpdate()
 
-    def createMatchEntries(self, noNotes = False):
-        ### Creates all of the match entries
-        ## Compressed Sheets Query Protocol Setup
+    def createMatchEntries(self, noNotes=False):
+        if not self.matchList:
+            print("Error: matchList is empty. Cannot create match entries.")
+            return
+    
+        # Compressed Sheets Query Protocol Setup
         grabXLimit = (len(self.matchList) * 18) + 2
         csqp = UCSQP(self, self.matchList[0].o_x, self.matchList[0].o_y, self.matchList[0].o_x + 5, grabXLimit)
-
+    
         # Makes sure the notes don't get deleted
-        if noNotes == False:
+        if not noNotes:
             self.grabNotes(csqp)
-
         # Sets the filters
         self.filterMatches()
-
+    
         # Actual match entry creation, uses one CSQP
         print("Creating Match Entries...")
         for match in self.filteredMatchList:
@@ -692,7 +696,7 @@ class Sheets:
             ### Match Title ###
             csqp.updateCellValue(1, 1, match.matchtitle)
             csqp.updateCellFormatting(1, 1, self.matchtitle_format)
-
+    
             ### Section Names ###
             csqp.updateCellFormatting(1, 2, self.category_title_format)
             csqp.updateCellFormatting(4, 2, self.category_title_format)
@@ -702,6 +706,7 @@ class Sheets:
             csqp.updateCellValue(4, 2, "Predictions")
             csqp.updateCellValue(1, 8, "Auto Score")
             csqp.updateCellValue(4, 8, "Teleop Score")
+    
 
             ### Sub-Sections ###
             ## Centered Values Setup
@@ -911,8 +916,8 @@ class Sheets:
                 csqp.updateCellRangeFormatting(1, 14, 6, 17, self.match_scheduled_format)
 
         # Pushes all of the cells to google sheets
-        print ("Done!")
         csqp.pushCellUpdate()
+        print ("Done!")
 
     def createTeamObjects(self):
         self.teamDict = {}
@@ -1213,5 +1218,4 @@ class UCSQP:
                 self.ws.update_cells(self.cell_list, value_input_option = 'USER_ENTERED')
             except:
                 self.sheet.gc.login()
-                self.ws.update_cells(self.cell_list, value_input_option = 'USER_ENTERED')
-
+                self.ws.update_cells(self.cell_list, value_input_option = 'USER_ENTERED')   
