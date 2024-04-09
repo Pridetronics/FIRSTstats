@@ -46,8 +46,12 @@ class Match:
         self.blueteam_avscr = 0
 
     def formatDate(self):
-        datevalues = self.schedule["startTime"].split("T")[0].split("-")
-        return ("(%s/%s/%s)" % (datevalues[1], datevalues[2], datevalues[0]))
+        if self.schedule["startTime"] is None:
+            return "Unknown Date"
+        else:
+            datevalues = self.schedule["startTime"].split("T")[0].split("-")
+            # Assuming datevalues is a list containing year, month, and day
+            return f"{datevalues[1]}/{datevalues[2]}/{datevalues[0]}"
 
     def calculateAverages(self, teamDict, scoreav = False):
         self.redteam_avmr = 0
@@ -199,12 +203,15 @@ class Team:
         s_new_ratingdeviation = math.sqrt((1 / self.ratingdeviation ** 2 + 1 / d_squared) ** -1)
         self.mitchrating = round(s_new_mitchrating)
         self.ratingdeviation = round(s_new_ratingdeviation)
-    
+
     def getRankTitle(self, max, min):
         # Returns a function to display the corresponding CSGO rank for the MitchRating
         # Implemented on the request of Angel Heredia
         # Can be removed, has literally no purpose other than looking nice
-        i = range(min, max, round((max-min)/17))
+        if max == min:
+            i = range(min, max + 1)  # If max and min are equal, create a range of one element
+        else:
+            i = range(min, max, round((max-min)/17))
         # Silver 1
         if self.mitchrating <= i[0]:
             return '=IMAGE("https://csgo-stats.com/custom/img/ranks/1.png", 4, 20, 50)'
@@ -262,5 +269,3 @@ class Team:
         # Theoretically should never happen but who tf knows
         else:
             return '=IMAGE("https://ih1.redbubble.net/image.792313560.3852/flat,550x550,075,f.u2.jpg")'
-            print("Rank Title Not Found!")
-

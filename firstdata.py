@@ -119,22 +119,25 @@ class MatchData:
             return False
     
     def checkIfMatchValid(self):
-        # Checks to see if the match actually exists
-        # Used to protect against program crashing if an invalid
-        # match ID or season is entered
         try:
             # Attempts to get the event data
             response = requests.get('%s/v2.0/%s/schedule/%s/qual/hybrid' % (self.config.host, str(self.config.season), self.config.eventid), headers={'Accept': 'application/json', 'Authorization': 'Basic %s' % self.config.authString})
-            # This is where it will fail if the event code is not valid
-            # The response from an invalid match ID will not have a key called "Schedule"
-            tempData = response.json()["Schedule"]
-            # Also checks to see if the match data is completely empty
-            # If it is, it won't put the event in because it would crash the program
-            tempEntry = tempData[0]
-            # If all of these checks pass, return true and change over the event data
-            return True
-        except:
-            # If it fails then return false
-            print("Invalid Event Entered: %s" % self.config.eventid)
+            
+            # Check if the response contains the expected data structure
+            if "Schedule" in response.json():
+                # Check if the schedule data is not empty
+                if response.json()["Schedule"]:
+                    # If all checks pass, return True indicating a valid event
+                    return True
+                else:
+                    print("Schedule data is empty for event: %s" % self.config.eventid)
+                    return False
+            else:
+                print("Schedule data not found in the response for event: %s" % self.config.eventid)
+                return False
+        except Exception as e:
+            # Print error message and return False if any exception occurs
+            print("Error checking event validity:", e)
             return False
+
 
